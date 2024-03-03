@@ -1,12 +1,34 @@
+<script setup>
+
+const props = defineProps({
+    title: String,
+    price: Number,
+    isAdded: Boolean
+  });
+
+
+
+</script>
+
 <template>
-  <p>ETO COMPONENT</p>
-  <button>open</button>
+
+  <div class="product">
+    <h2>Товар: {{ title }}</h2>
+    <h3>Цена: {{ price }}</h3>
+    <h4>Добавлен: {{ isAdded }}</h4>
+
+    <slot></slot>
+
+  </div>
+
 </template>
 
 <style scoped>
-
-body {
-  background: gold;
+.product {
+  border: 1px solid blue;
+  padding: 10px;
+  margin-bottom: 10px;
 }
+
 
 </style>
