@@ -1,7 +1,6 @@
 <script setup>
-  import MyHello from "@/components/MyHello.vue";
   import Header from "@/components/Header.vue";
-  import Card from "@/components/Card.vue";
+  import CardList from "@/components/CardList.vue";
 </script>
 
 <template>
@@ -12,14 +11,8 @@
     <div class="p-10">
       <h2 class="text-3xl font-bold mb10">Все кроссовки</h2>
 
+      <CardList/>
 
-      <div class="grid grid-cols-4 gap-5">
-      <Card/>
-      <Card/>
-      <Card/>
-      <Card/>
-      <Card/>
-      </div>
     </div>
 
   </div>
