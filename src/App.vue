@@ -9,32 +9,79 @@ import {onMounted, reactive, ref, watch} from "vue";
   const items = ref([]);
 
   const filters = reactive({
-    sortBy: '',
+    sortBy: 'title',
     searchQuery: ''
   });
 
+
+  const addToFavorite = async (item) => {
+    item.isFavorite = true;
+  }
+
   const fetchItems = async () => {
     try{
-
       const params = {
         sortBy: filters.sortBy,
-        searchQuery: filters.searchQuery
       };
+      if (filters.searchQuery){
+        params.title = `*${filters.searchQuery}*`
+      }
 
-      const { data } = await axios.
-      get('https://221dbf5fb9a84a5d.mokky.dev/items?sortBy=' + filters.sortBy)
-      items.value = data;
+      const { data } = await axios.get(
+          `https://221dbf5fb9a84a5d.mokky.dev/items`,
+          {
+            params
+          })
+      items.value = data.map((obj) => ({
+        ...obj, isFavorite:false, isAdded:false
+      }));
     } catch (err) {
       console.log(err)
     }
   };
 
+  const fetchFavorites = async () => {
+    try{
+      const { data: favorites } = await axios.get(
+        `https://221dbf5fb9a84a5d.mokky.dev/favorites`
+      )
+      items.value = items.value.map(item => {
+          const favorite = favorites.find((favorite) => favorite.parentId === item.id);
+
+          if (!favorite) {
+            return item;
+          }
+
+          return {
+            ...item,
+            isFavorite: true,
+            favoriteId: favorite.id,
+          }
+      });
+      console.log(items.value);
+    }   catch (err) {
+      console.log(err)
+    }
+}
+
   const onChangeSelect = event => {
     filters.sortBy = event.target.value;
   }
 
-  onMounted(fetchItems);
+  const onChangeSearchInput = event => {
+    filters.searchQuery = event.target.value;
+  }
+
+
+
+  onMounted(async () => {
+    await fetchItems();
+    await fetchFavorites();
+  });
   watch(filters, fetchItems);
+
+
+
 </script>
 
 <template>
@@ -65,6 +112,7 @@ import {onMounted, reactive, ref, watch} from "vue";
                 src="/search.svg"
             />
             <input
+                @input="onChangeSearchInput"
                 class="border rounded-md py-2 pl-11 pr-4 focus:border-gray-400 border-gray-200 outline-none"
                 placeholder="Поиск"/>
           </div>
