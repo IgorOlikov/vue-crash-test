@@ -1,6 +1,11 @@
 <script setup>
 import Card from "@/components/Card.vue";
 
+defineProps({
+  items: Array,
+});
+
+
 const onClickAdd = () => alert('Добавить');
 const onClickFavorite = () => alert('Избранное');
 </script>
@@ -9,13 +14,12 @@ const onClickFavorite = () => alert('Избранное');
 
   <div class="grid grid-cols-4 gap-5">
     <Card
-        title="Nike air max"
-        :price="5000"
-        image-url="/sneakers/sneakers-1.jpg"
-        :is-added="false"
-        :is-favorite="false"
-        :on-click-add="onClickAdd"
-        :on-click-favorite="onClickFavorite"
+        v-for="item in items"
+        :key="item.id"
+        :title="item.title"
+        :price="item.price"
+        :image-url="item.imageUrl"
+
     />
   </div>
 

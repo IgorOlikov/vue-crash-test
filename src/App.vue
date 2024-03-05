@@ -1,7 +1,40 @@
 <script setup>
+import {onMounted, reactive, ref, watch} from "vue";
+  import axios from "axios";
+
   import Header from "@/components/Header.vue";
   import CardList from "@/components/CardList.vue";
   import Drawer from "@/components/Drawer.vue";
+
+  const items = ref([]);
+
+  const filters = reactive({
+    sortBy: '',
+    searchQuery: ''
+  });
+
+  const fetchItems = async () => {
+    try{
+
+      const params = {
+        sortBy: filters.sortBy,
+        searchQuery: filters.searchQuery
+      };
+
+      const { data } = await axios.
+      get('https://221dbf5fb9a84a5d.mokky.dev/items?sortBy=' + filters.sortBy)
+      items.value = data;
+    } catch (err) {
+      console.log(err)
+    }
+  };
+
+  const onChangeSelect = event => {
+    filters.sortBy = event.target.value;
+  }
+
+  onMounted(fetchItems);
+  watch(filters, fetchItems);
 </script>
 
 <template>
@@ -18,10 +51,12 @@
         <h2 class="text-3xl font-bold mb10">Все кроссовки</h2>
 
         <div class="flex gap-4">
-          <select class="py-2 px-3 border rounded-md outline-none">
-            <option>По названию</option>
-            <option>По цене (дешевые)</option>
-            <option>По цене (дорогие)</option>
+          <select
+              @change="onChangeSelect"
+              class="py-2 px-3 border rounded-md outline-none">
+            <option value="name">По названию</option>
+            <option value="price">По цене (дешевые)</option>
+            <option value="-price">По цене (дорогие)</option>
           </select>
 
           <div class="relative">
@@ -36,8 +71,10 @@
         </div>
 
       </div>
+      <div class="mt-10">
+        <CardList :items="items"/>
+      </div>
 
-      <CardList/>
 
     </div>
 
