@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, reactive, ref, watch} from "vue";
+  import {onMounted, provide, reactive, ref, watch} from "vue";
   import axios from "axios";
 
   import Header from "@/components/Header.vue";
@@ -8,6 +8,9 @@ import {onMounted, reactive, ref, watch} from "vue";
 
   const items = ref([]);
 
+  const drawerOpen =ref(false);
+
+
   const filters = reactive({
     sortBy: 'title',
     searchQuery: ''
@@ -15,7 +18,30 @@ import {onMounted, reactive, ref, watch} from "vue";
 
 
   const addToFavorite = async (item) => {
-    item.isFavorite = true;
+    try {
+      if (!item.isFavorite) {
+        const obj = {
+          parentId: item.id,
+        };
+
+        item.isFavorite = true;
+
+        const {data} = await axios.post(`https://221dbf5fb9a84a5d.mokky.dev/favorites`, obj)
+
+        item.isFavorite = true;
+        item.favoriteId = data.id;
+
+        console.log(data);
+      } else {
+        item.isFavorite = false;
+
+        await axios.delete(`https://221dbf5fb9a84a5d.mokky.dev/favorites/${item.favoriteId}`)
+
+        item.favoriteId = null;
+      }
+    }catch (err){
+
+    }
   }
 
   const fetchItems = async () => {
@@ -33,7 +59,10 @@ import {onMounted, reactive, ref, watch} from "vue";
             params
           })
       items.value = data.map((obj) => ({
-        ...obj, isFavorite:false, isAdded:false
+        ...obj,
+        isFavorite:false,
+        isAdded:false,
+        favoriteId: null
       }));
     } catch (err) {
       console.log(err)
@@ -58,7 +87,7 @@ import {onMounted, reactive, ref, watch} from "vue";
             favoriteId: favorite.id,
           }
       });
-      console.log(items.value);
+      //console.log(items.value);
     }   catch (err) {
       console.log(err)
     }
@@ -72,22 +101,18 @@ import {onMounted, reactive, ref, watch} from "vue";
     filters.searchQuery = event.target.value;
   }
 
-
-
   onMounted(async () => {
     await fetchItems();
     await fetchFavorites();
   });
   watch(filters, fetchItems);
 
-
-
 </script>
 
 <template>
 
 
-  <!-- <Drawer/> -->
+  <Drawer v-if="drawerOpen" />
 
 
   <div class="bg-white w-4/5 m-auto rounded-xl shadow-xl mt-14 ">
@@ -120,7 +145,7 @@ import {onMounted, reactive, ref, watch} from "vue";
 
       </div>
       <div class="mt-10">
-        <CardList :items="items"/>
+        <CardList :items="items" @addToFavorite="addToFavorite"/>
       </div>
 
 
