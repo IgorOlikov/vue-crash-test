@@ -1,5 +1,5 @@
 <script setup>
-  import {onMounted, provide, reactive, ref, watch} from "vue";
+  import {computed, onMounted, provide, reactive, ref, watch} from "vue";
   import axios from "axios";
 
   import Header from "@/components/Header.vue";
@@ -8,13 +8,72 @@
 
   const items = ref([]);
 
-  const drawerOpen =ref(false);
+  const cart = ref([]);
 
+  const drawerOpen = ref(false);
+  
+  const isCreatedOrder = ref(false);
+  
+
+  const createOrder = async () => {
+    try {
+      isCreatedOrder.value = true;
+      const { data } = await axios.post(`https://221dbf5fb9a84a5d.mokky.dev/orders`,{
+        items: cart.value,
+        totalPrice: totalPrice.value,
+      })
+      cart.value = [];
+
+      return data;
+    }catch (err){
+      console.log(err);
+    } finally {
+      isCreatedOrder.value = false;
+    }
+  };
+
+  const cartIsEmpty = computed(() => cart.value.length === 0);
+
+  const cartButtonDisabled = computed(() =>
+    isCreatedOrder.value || cartIsEmpty.value
+  );
+
+  const totalPrice = computed(
+      () => cart.value.reduce((acc, item) => acc + item.price, 0)
+    );
+
+  const vatPrice = computed(() => Math.round(totalPrice.value * 0.05));
 
   const filters = reactive({
     sortBy: 'title',
     searchQuery: ''
   });
+
+  const closeDrawer = () => {
+    drawerOpen.value = false;
+  }
+
+  const openDrawer = () => {
+    drawerOpen.value = true;
+  }
+
+  const onClickAddPlus = (item) => {
+    if (!item.isAdded){
+      addToCart(item);
+      }else {
+      removeFromCart(item);
+    }
+  };
+
+  const addToCart = (item) => {
+    cart.value.push(item);
+    item.isAdded = true;
+  };
+
+  const removeFromCart = (item) => {
+    cart.value.splice(cart.value.indexOf(item),1);
+    item.isAdded = false;
+  }
 
 
   const addToFavorite = async (item) => {
@@ -107,16 +166,37 @@
   });
   watch(filters, fetchItems);
 
+  watch(cart, () => {
+    items.value = items.value.map((item) => ({
+      ...item,
+      isAdded: false
+    }))
+  });
+
+  provide('cart',{
+    cart,
+    closeDrawer,
+    openDrawer,
+    addToCart,
+    removeFromCart,
+  });
 </script>
 
 <template>
 
-
-  <Drawer v-if="drawerOpen" />
-
+  <Drawer
+      v-if="drawerOpen"
+      :total-price="totalPrice"
+      :vat-price="vatPrice"
+      :cart-button-disabled="cartButtonDisabled"
+      @create-order="createOrder"
+  />
 
   <div class="bg-white w-4/5 m-auto rounded-xl shadow-xl mt-14 ">
-    <Header/>
+    <Header
+        :total-price="totalPrice"
+        @open-drawer="openDrawer"
+    />
 
     <div class="p-10">
       <div class="flex justify-between items-center">
@@ -145,9 +225,12 @@
 
       </div>
       <div class="mt-10">
-        <CardList :items="items" @addToFavorite="addToFavorite"/>
+        <CardList
+            :items="items"
+            @add-to-favorite="addToFavorite"
+            @add-to-cart="onClickAddPlus"
+        />
       </div>
-
 
     </div>
 
