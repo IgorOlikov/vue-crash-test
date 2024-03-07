@@ -4,9 +4,11 @@ import Card from "@/components/Card.vue";
 
 defineProps({
   items: Array,
+  isFavorites: Boolean,
 });
 
 const emit = defineEmits(['addToFavorite','addToCart']);
+
 
 
 </script>
@@ -23,8 +25,8 @@ const emit = defineEmits(['addToFavorite','addToCart']);
         :title="item.title"
         :price="item.price"
         :image-url="item.imageUrl"
-        :on-click-favorite="() => emit('addToFavorite', item)"
-        :on-click-add="() => emit('addToCart', item)"
+        :on-click-favorite="isFavorites ? null : () => emit('addToFavorite', item)"
+        :on-click-add="isFavorites ? null : () => emit('addToCart', item)"
         :is-favorite="item.isFavorite"
         :is-added="item.isAdded"
 

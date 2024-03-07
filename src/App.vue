@@ -8,31 +8,14 @@
 
   const cart = ref([]);
   const drawerOpen = ref(false);
-  const isCreatedOrder = ref(false);
+
   
 
-  const createOrder = async () => {
-    try {
-      isCreatedOrder.value = true;
-      const { data } = await axios.post(`https://221dbf5fb9a84a5d.mokky.dev/orders`,{
-        items: cart.value,
-        totalPrice: totalPrice.value,
-      })
-      cart.value = [];
 
-      return data;
-    }catch (err){
-      console.log(err);
-    } finally {
-      isCreatedOrder.value = false;
-    }
-  };
 
-  const cartIsEmpty = computed(() => cart.value.length === 0);
 
-  const cartButtonDisabled = computed(() =>
-    isCreatedOrder.value || cartIsEmpty.value
-  );
+
+
 
   const totalPrice = computed(
       () => cart.value.reduce((acc, item) => acc + item.price, 0)
@@ -107,9 +90,9 @@
       v-if="drawerOpen"
       :total-price="totalPrice"
       :vat-price="vatPrice"
-      :cart-button-disabled="cartButtonDisabled"
-      @create-order="createOrder"
   />
+  <!--:cart-button-disabled="cartButtonDisabled"
+      @create-order="createOrder" -->
 
   <div class="bg-white w-4/5 m-auto rounded-xl shadow-xl mt-14 ">
     <Header

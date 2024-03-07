@@ -1,7 +1,8 @@
 <script setup>
+import {inject, onMounted, reactive, ref, watch} from "vue";
 import CardList from "@/components/CardList.vue";
 import axios from "axios";
-import {inject, onMounted, reactive, ref, watch} from "vue";
+import debounce from 'lodash.debounce';
 
 
 const {addToCart,removeFromCart,cart} = inject('cart');
@@ -24,9 +25,9 @@ const onChangeSelect = event => {
   filters.sortBy = event.target.value;
 }
 
-const onChangeSearchInput = event => {
+const onChangeSearchInput = debounce((event) => {
   filters.searchQuery = event.target.value;
-}
+},300)
 
 const onClickAddPlus = (item) => {
   if (!item.isAdded){
@@ -67,7 +68,7 @@ const fetchFavorites = async () => {
         `https://221dbf5fb9a84a5d.mokky.dev/favorites`
     )
     items.value = items.value.map(item => {
-      const favorite = favorites.find((favorite) => favorite.parentId === item.id);
+      const favorite = favorites.find((favorite) => favorite.item_id === item.id);
 
       if (!favorite) {
         return item;
@@ -89,7 +90,8 @@ const addToFavorite = async (item) => {
   try {
     if (!item.isFavorite) {
       const obj = {
-        parentId: item.id,
+        item_id: item.id,
+        item
       };
 
       item.isFavorite = true;
@@ -99,7 +101,6 @@ const addToFavorite = async (item) => {
       item.isFavorite = true;
       item.favoriteId = data.id;
 
-      console.log(data);
     } else {
       item.isFavorite = false;
 
@@ -131,7 +132,7 @@ watch(filters, fetchItems);
 <template>
 
   <div class="flex justify-between items-center">
-    <h2 class="text-3xl font-bold mb10">Все кроссовки</h2>
+    <h2 class="text-3xl font-bold mb-10">Все кроссовки</h2>
 
     <div class="flex gap-4">
       <select

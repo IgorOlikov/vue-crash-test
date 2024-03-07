@@ -24,6 +24,7 @@ defineProps({
 
 
   <img
+      v-if="onClickFavorite"
       @click="onClickFavorite"
       :src="!isFavorite ? '/like-1.svg' : '/like-2.svg'"
       alt="like 1"
