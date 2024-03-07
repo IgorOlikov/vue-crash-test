@@ -118,7 +118,7 @@
     />
 
     <div class="p-10">
-      <Home/>
+      <router-view></router-view>
 
     </div>
 
